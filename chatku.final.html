@@ -1,0 +1,1261 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>CBOTIKA + Kuis Susun Kata (FINAL)</title>
+
+<style>
+/* ================= GLOBAL ================= */
+:root{
+  --accent:#f37021;
+  --blue:#19a4e7;
+  --soft-blue:#eaf6ff;
+  --card-bg:#ffffff;
+  --text:#002e4d;
+  --success:#00d084;
+  --danger:#f33c67;
+}
+*{box-sizing:border-box;font-family:"Segoe UI",sans-serif}
+html,body{height:100%;margin:0;background:linear-gradient(180deg,#ffffff,#f4fbff);color:var(--text)}
+
+/* ================ LAYOUT ================ */
+.app-wrap{min-height:100vh;display:flex;flex-direction:column;align-items:stretch;}
+
+/* ================ LOGIN (LEFT/RIGHT) ================ */
+.login-view{display:flex;flex:1;min-height:100vh;}
+.login-left{flex:1;position:relative;overflow:hidden;min-height:200px}
+.login-left::before{
+  content:"";position:absolute;inset:0;
+  background:url("https://i.imgur.com/oq1A8q2.jpeg") center/contain no-repeat;
+  opacity:0.16;
+}
+.login-right{flex:1;display:flex;align-items:center;justify-content:center;padding:28px}
+
+/* login card */
+.login-card{
+  width:100%;max-width:420px;background:rgba(25,164,231,0.10);padding:26px;border-radius:16px;
+  box-shadow:0 10px 30px rgba(7,90,140,0.06);backdrop-filter:blur(4px);
+}
+.login-card h2{margin:0 0 14px 0;color:var(--blue);text-align:center}
+label{display:block;margin-bottom:6px;font-weight:700;color:#0b3b4f}
+input[type="text"], input[type="file"]{
+  width:100%;padding:10px;border-radius:10px;border:1px solid #dceefc;background:#fff;margin-bottom:12px;
+}
+.preview{
+  width:180px;height:180px;margin:10px auto 14px;border-radius:12px;border:2px solid var(--blue);
+  overflow:hidden;background:var(--soft-blue);position:relative;display:flex;align-items:center;justify-content:center;
+}
+.preview img, .preview video{width:100%;height:100%;object-fit:cover;display:block}
+#countdown{position:absolute;inset:0;display:none;align-items:center;justify-content:center;font-size:56px;font-weight:800;color:#fff;text-shadow:0 0 10px rgba(0,0,0,0.6)}
+.btn-foto, .btn-login{width:100%;padding:12px;border-radius:10px;border:none;font-weight:800;color:#fff;cursor:pointer;margin-top:10px}
+.btn-foto{background:var(--blue)}
+.btn-login{background:var(--accent)}
+.note{font-size:13px;color:#445; text-align:center;margin-top:10px}
+
+/* ================ CHAT & PANEL ================ */
+/* ================ CHAT & PANEL ================ */
+.chat-view{display:none;padding:22px;align-items:flex-start;justify-content:center}
+.container-main{display:flex;gap:28px;max-width:1200px;width:100%;justify-content:center;flex-wrap:wrap}
+
+/* left panel (petunjuk) */
+.left-panel{
+  width:340px;background:#eaf9ff;border-radius:14px;padding:18px;border:1px solid #cfeef9;
+}
+.left-panel h2{margin:0 0 10px 0;color:#0367a6}
+.left-panel h3{margin:12px 0 6px 0;color:#0367a6;font-size:15px}
+.left-panel ul{padding-left:18px;color:#073e58}
+
+/* chat container */
+.chat-container{
+  width:520px;background:var(--card-bg);border-radius:14px;box-shadow:0 8px 28px rgba(10,40,80,0.06);display:flex;flex-direction:column;overflow:hidden;
+}
+.chat-header{background:linear-gradient(90deg,#19a4e7,#2eb7ff);padding:12px;display:flex;justify-content:space-between;align-items:center;color:#fff}
+.chat-header-left{display:flex;align-items:center;gap:12px}
+.chat-header-left img{width:60px;height:60px;border-radius:10px;object-fit:cover;background:#fff}
+.chat-body{height:360px;padding:12px;overflow:auto;background:#fbfeff}
+.chat-bubble{display:flex;margin-bottom:12px;gap:8px}
+.chat-bubble.bot .bubble{background:#4f6cff;color:#fff}
+.chat-bubble.user{justify-content:flex-end}
+.bubble{padding:10px 14px;border-radius:16px;background:#e8f0ff;color:#083b5e;max-width:90%}
+
+/* input area (FIX 80% - 20%) */
+.chat-input{
+  display:flex;
+  gap:10px;
+  padding:12px;
+  border-top:1px solid #e6f1fb;
+  background:#fff;
+}
+
+.chat-input input{
+  flex:0 0 80%;        /* >>> 80% <<< */
+  padding:10px;
+  border-radius:14px;   /* dibikin rounded biar seragam */
+  border:1px solid #dceefe;
+}
+
+/* tombol kirim (FIX 20% + rounded) */
+.kirim{
+  flex:0 0 20%;        /* >>> 20% <<< */
+  background:#2eb7ff;
+  color:#033d6a;
+  gap:10px;
+  padding:10px;
+  border-radius:14px;   /* rounded */
+  border:none;
+  cursor:pointer;
+  font-weight:800;
+}
+
+.chat-buttons{display:flex;gap:10px;padding:10px;background:#fff}
+.chat-buttons button{flex:1;padding:10px;border-radius:10px;border:none;color:#fff;font-weight:800;cursor:pointer}
+.download{background:#2eb7ff}
+.clear{background:#6a6aff}
+
+.logout-btn{background:#ffffff;color:#033d6a;padding:8px;border-radius:10px;border:none;cursor:pointer}
+
+
+/* ================ QUIZ ================ */
+.quiz-view{display:none;padding:28px 12px;align-items:center;justify-content:center}
+.quiz-wrap{width:100%;max-width:760px;margin:auto;background:rgba(0,120,255,0.06);padding:20px;border-radius:14px;box-shadow:0 10px 30px rgba(18,60,120,0.04)}
+.quiz-header{display:flex;justify-content:space-between;align-items:center}
+.quiz-letters{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:12px 0}
+.quiz-letter{width:62px;height:62px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:800;background:linear-gradient(145deg,#d7f1ff,#a5d6ff);border:2px solid rgba(0,140,255,0.25);color:#004ea8}
+.quiz-controls{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:14px}
+.quiz-controls button{padding:10px 14px;border-radius:10px;border:none;color:#fff;font-weight:800;cursor:pointer}
+.btn-check{background:var(--success)}
+.btn-shuffle{background:var(--danger)}
+.btn-next{background:#ffb347;color:#111}
+.btn-finish{background:#6a6aff}
+.quiz-meta{margin-top:12px;font-weight:700;color:#05355f}
+.quiz-footer{margin-top:14px;font-size:13px;color:#083b5e}
+
+/* Animations for correct/wrong */
+@keyframes shake{
+  0%{transform:translateX(0)}
+  25%{transform:translateX(-5px)}
+  50%{transform:translateX(5px)}
+  75%{transform:translateX(-5px)}
+  100%{transform:translateX(0)}
+}
+@keyframes pop{
+  0%{transform:scale(1)}
+  50%{transform:scale(1.15)}
+  100%{transform:scale(1)}
+}
+.correct-box{
+  background:linear-gradient(90deg,#00d084,#00b96b) !important;
+  border-color:rgba(0,160,120,0.9) !important;
+  color:#fff !important;
+  animation:pop .35s ease;
+}
+.wrong-box{
+  background:linear-gradient(90deg,#ff7b8f,#ff4d6d) !important;
+  border-color:rgba(255,77,109,0.9) !important;
+  color:#fff !important;
+  animation:shake .45s ease;
+}
+
+/* bigger input font */
+#quizAnswerInput{
+  font-size:26px !important;
+  font-weight:800;
+  letter-spacing:2px;
+  text-transform:uppercase;
+  text-align:center;
+}
+
+
+/* responsive */
+@media (max-width:900px){
+  .login-view{flex-direction:column}
+  .chat-view{padding:14px}
+  .container-main{flex-direction:column;align-items:center}
+  .left-panel,.chat-container{width:95%}
+}
+
+/* ================= POPUP LOGOUT ================= */
+.popup-overlay{
+  position:fixed;top:0;left:0;
+  width:100%;height:100%;
+  background:rgba(0,0,0,0.6);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:99999;
+}
+.popup-box{
+  background:#fff;
+  width:320px;
+  padding:20px;
+  border-radius:16px;
+  text-align:center;
+  animation:popIn 0.25s ease;
+  box-shadow:0 10px 30px rgba(0,0,0,0.25);
+}
+.popup-actions{
+  margin-top:18px;
+  display:flex;
+  gap:10px;
+}
+.btn-yes{
+  flex:1;
+  background:#f33c67;
+  color:#fff;
+  border:none;
+  padding:10px;
+  border-radius:12px;
+  cursor:pointer;
+  font-weight:800;
+}
+.btn-no{
+  flex:1;
+  background:#ccc;
+  color:#333;
+  border:none;
+  padding:10px;
+  border-radius:12px;
+  cursor:pointer;
+  font-weight:800;
+}
+.btn-yes:hover{background:#d72c56;}
+.btn-no:hover{background:#bbb;}
+@keyframes popIn{
+  from{transform:scale(0.8);opacity:0;}
+  to{transform:scale(1);opacity:1;}
+}
+
+</style>
+</head>
+
+<body>
+<div class="app-wrap">
+
+  <!-- ============ LOGIN ============ -->
+  <main id="loginSection" class="login-view">
+    <section class="login-left">
+      <div class="branding" style="position:absolute;top:20px;left:20px;color:var(--accent)">
+        <h1 style="margin:0">CBOTIKA SMAN JOGOROTO</h1>
+        <p style="margin:0">Chatbot Pintar Untuk Siswa</p>
+      </div>
+    </section>
+
+    <aside class="login-right">
+      <div class="login-card" role="region" aria-label="Login">
+        <h2>LOGIN</h2>
+
+        <label for="nama">Nama Siswa</label>
+        <input id="nama" type="text" placeholder="Masukkan nama siswa" />
+
+        <label for="fileInput">Unggah Foto (Opsional)</label>
+        <input id="fileInput" type="file" accept="image/*" />
+
+        <div class="preview" aria-hidden="false">
+          <video id="cameraStream" autoplay playsinline muted style="display:none"></video>
+          <img id="photoPreview" style="display:none" alt="Preview foto">
+          <div id="countdown" aria-hidden="true"></div>
+        </div>
+
+        <button id="takePhoto" class="btn-foto" type="button">Ambil Foto</button>
+        <button id="loginBtn" class="btn-login" type="button">Login</button>
+
+        <div class="note">Gunakan kamera atau unggah foto dari galeri.</div>
+      </div>
+    </aside>
+  </main>
+
+  <!-- ============ CHAT ============ -->
+  <section id="chatSection" class="chat-view" aria-hidden="true">
+    <div class="container-main">
+      <aside class="left-panel" role="complementary">
+        <h2>Petunjuk Penggunaan</h2>
+        <ul>
+          <li>Ketik pertanyaan di kolom chat.</li>
+          <li>Tekan tombol <strong>Kirim</strong> untuk mengirim.</li>
+          <li>Gunakan <strong>Clear</strong> untuk menghapus chat.</li>
+          <li>Gunakan <strong>Download</strong> untuk menyimpan chat.</li>
+          <li>Klik <strong>Kuis</strong> untuk bermain Susun Kata.</li>
+        </ul>
+
+        <h3>Chatbot ini berisi materi:</h3>
+        <ul>
+          <li><strong>Sistem Komputer</strong></li>
+          <li><strong>Hardware</strong></li>
+          <li><strong>Software</strong></li>
+          <li><strong>Brainware</strong></li>
+        </ul>
+
+        
+<!-- PDF upload input added by assistant -->
+<h3>Upload File TXT Materi</h3>
+<input type="file" id="txtInput" accept=".txt">
+<p style="font-size:12px;color:#055b8a">Pastikan filenya TXT.</p>
+<!-- End PDF upload input -->
+<p style="font-size:13px;color:#034d7a">Catatan: Gunakan fitur kamera pada halaman login untuk mengambil foto profil.</p>
+      </aside>
+
+      <div class="chat-container" role="main">
+        <header class="chat-header">
+          <div class="chat-header-left" style="align-items:center">
+            <img id="fotoSiswaChat" src="" alt="Foto siswa">
+            <div>
+              <div id="namaSiswaChat" style="font-weight:800;font-size:15px;color:#fff"></div>
+              <div style="font-size:12px;color:rgba(255,255,255,0.9)">Status: Online</div>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:8px;align-items:center">
+            <button id="kuisBtn" class="logout-btn" type="button">Kuis</button>
+            <button id="logoutBtn" class="logout-btn" type="button">Logout</button>
+          </div>
+        </header>
+
+        <div id="chatBody" class="chat-body" role="log" aria-live="polite">
+          <div class="chat-bubble bot">
+            <div class="bubble">Halo! Selamat datang di Cbotika 😊<br>Silakan ketik pertanyaanmu.</div>
+          </div>
+        </div>
+
+        <div class="chat-input" role="search">
+          <input id="inputChat" type="text" placeholder="Ketik pesan..." aria-label="Ketik pesan">
+          <button id="kirimBtn" class="kirim" type="button">Kirim</button>
+        </div>
+
+        <div class="chat-buttons">
+          <button id="downloadBtn" class="download" type="button">Download</button>
+          <button id="clearBtn" class="clear" type="button">Clear</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ QUIZ ============ -->
+  <section id="quizSection" class="quiz-view" aria-hidden="true">
+    <div class="quiz-wrap" role="region" aria-label="Kuis Susun Kata">
+      <div class="quiz-header">
+        <div style="display:flex;gap:12px;align-items:center">
+          <div style="font-size:44px">🤖</div>
+          <div>
+            <div style="font-size:20px;font-weight:800;color:#004ea8">Susun Kata</div>
+            <div style="font-size:14px;color:#0463a8">Kuis dalam aplikasi</div>
+          </div>
+        </div>
+        <button id="quizBackBtnTop" style="background:#6a6aff;color:#fff;padding:8px 12px;border-radius:10px;border:none;border:none;cursor:pointer;font-weight:700">Kembali</button>
+      </div>
+
+      <hr style="border:none;border-top:1px solid rgba(0,0,0,0.06);margin:12px 0 18px 0" />
+
+      <div id="quizStartScreen">
+        <p>Timer 30 detik per soal. Jika habis, lanjut ke soal berikutnya.</p>
+        <button id="quizStartBtn" style="background:#00a3ff;color:#fff;padding:10px 16px;border:none;border-radius:10px;border:none;cursor:pointer;font-weight:800">Mulai Permainan</button>
+      </div>
+
+      <div id="quizMainScreen" style="display:none">
+        <div id="quizClue" style="font-weight:800;color:#003a6b;text-align:center;margin-top:8px"></div>
+        <div id="quizLetters" class="quiz-letters" aria-hidden="false"></div>
+
+	<div style="margin-top:8px">
+ 	 <input 
+ 	   id="quizAnswerInput" 
+ 	   type="text" 
+ 	   placeholder="Ketik jawaban..." 
+ 	   style="width:100%; padding:10px; border-radius:10px; border:1px solid #dfeeff; text-align:center; font-size:18px;" 
+	  />
+	</div>
+
+
+        <div class="quiz-controls">
+          <button id="quizCheckBtn" class="btn-check" type="button">Cek</button>
+          <button id="quizShuffleBtn" class="btn-shuffle" type="button">Shuffle</button>
+          <button id="quizNextBtn" class="btn-next" type="button" style="display:none">Next</button>
+          <button id="quizFinishBtn" class="btn-finish" type="button" style="display:none">Selesai</button>
+        </div>
+
+        <div class="quiz-meta">
+          <div id="quizTimer">⏳ 30</div>
+          <div id="quizMsg" style="min-height:22px;margin-top:6px"></div>
+          <div id="quizScore" style="margin-top:6px">Skor: 0 / 0</div>
+        </div>
+      </div>
+
+      <div id="quizFinalScreen" style="display:none;margin-top:10px;text-align:center;font-size:25px">
+        <h3 id="quizFinalTitle">Skor Akhir</h3>
+        <p id="quizFinalMotiv"></p>
+
+        <div style="display:flex;gap:10px;justify-content:center;margin-top:12px">
+          <button id="quizLogoutBtn" style="background:#f33c67;color:#fff;padding:10px 16px;border:none;border-radius:10px;cursor:pointer;font-weight:800">Logout</button>
+          <button id="quizExitBtn" style="background:#6a6aff;color:#fff;padding:10px 16px;border:none;border-radius:10px;cursor:pointer;font-weight:800">Keluar Aplikasi</button>
+        </div>
+      </div>
+
+      <div class="quiz-footer">create by Afif Nimia @2025</div>
+    </div>
+  </section>
+
+</div>
+
+<!-- ================= SCRIPTS (1 block) ================= -->
+
+<!-- POPUP LOGOUT CANTIK -->
+<div id="popupLogout" class="popup-overlay">
+  <div class="popup-box">
+    <h3>Keluar Aplikasi?</h3>
+    <p>Apakah Anda yakin ingin keluar?</p>
+    <div class="popup-actions">
+      <button id="logoutYes" class="btn-yes">Ya, Keluar</button>
+      <button id="logoutNo" class="btn-no">Tidak</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* -------------------- Elements -------------------- */
+/* Login / Camera */
+const takePhotoBtn = document.getElementById('takePhoto');
+const fileInput = document.getElementById('fileInput');
+const cameraStream = document.getElementById('cameraStream');
+const photoPreview = document.getElementById('photoPreview');
+const countdownEl = document.getElementById('countdown');
+const loginBtn = document.getElementById('loginBtn');
+const namaInput = document.getElementById('nama');
+
+/* Views */
+const loginSection = document.getElementById('loginSection');
+const chatSection = document.getElementById('chatSection');
+const quizSection = document.getElementById('quizSection');
+
+/* Chat */
+const fotoSiswaChat = document.getElementById('fotoSiswaChat');
+const namaSiswaChat = document.getElementById('namaSiswaChat');
+const chatBody = document.getElementById('chatBody');
+const inputChat = document.getElementById('inputChat');
+const kirimBtn = document.getElementById('kirimBtn');
+const clearBtn = document.getElementById('clearBtn');
+const downloadBtn = document.getElementById('downloadBtn');
+const logoutBtn = document.getElementById('logoutBtn');
+const kuisBtn = document.getElementById('kuisBtn');
+
+/* Quiz */
+const quizPageEl = document.getElementById('quizSection');
+const quizBackBtnTop = document.getElementById('quizBackBtnTop');
+const quizStartBtn = document.getElementById('quizStartBtn');
+const quizStartScreen = document.getElementById('quizStartScreen');
+const quizMainScreen = document.getElementById('quizMainScreen');
+const quizFinalScreen = document.getElementById('quizFinalScreen');
+const quizClue = document.getElementById('quizClue');
+const quizLetters = document.getElementById('quizLetters');
+const quizAnswerInput = document.getElementById('quizAnswerInput');
+const quizCheckBtn = document.getElementById('quizCheckBtn');
+const quizShuffleBtn = document.getElementById('quizShuffleBtn');
+const quizNextBtn = document.getElementById('quizNextBtn');
+const quizFinishBtn = document.getElementById('quizFinishBtn');
+const quizTimer = document.getElementById('quizTimer');
+const quizMsg = document.getElementById('quizMsg');
+const quizScore = document.getElementById('quizScore');
+const quizLogoutBtn = document.getElementById('quizLogoutBtn');
+const quizExitBtn = document.getElementById('quizExitBtn');
+const quizFinalTitle = document.getElementById('quizFinalTitle');
+const quizFinalMotiv = document.getElementById('quizFinalMotiv');
+
+/* -------------------- Camera (countdown + capture) -------------------- */
+let currentStream = null;
+takePhotoBtn.addEventListener('click', async () => {
+  stopCamera();
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    alert('Kamera tidak didukung. Silakan unggah foto.');
+    fileInput.click();
+    return;
+  }
+
+  try {
+    try {
+        currentStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
+      } catch(e) {
+        currentStream = await navigator.mediaDevices.getUserMedia({ video: true });
+      }
+    cameraStream.srcObject = currentStream;
+    cameraStream.style.display = 'block';
+    photoPreview.style.display = 'none';
+
+    countdownEl.style.display = 'flex';
+    let count = 5;
+    countdownEl.textContent = count;
+
+    const timer = setInterval(() => {
+      count--;
+      countdownEl.textContent = count;
+      if (count <= 0) {
+        clearInterval(timer);
+        countdownEl.style.display = 'none';
+
+        // ensure video has dimensions
+        const vw = cameraStream.videoWidth || 640;
+        const vh = cameraStream.videoHeight || 480;
+        const canvas = document.createElement('canvas');
+        canvas.width = vw;
+        canvas.height = vh;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(cameraStream, 0, 0, vw, vh);
+
+        photoPreview.src = canvas.toDataURL('image/png');
+        photoPreview.style.display = 'block';
+        cameraStream.style.display = 'none';
+        stopCamera();
+      }
+    }, 1000);
+
+  } catch (err) {
+    console.error(err);
+    alert('Tidak bisa mengakses kamera. Silakan unggah foto.');
+    fileInput.click();
+  }
+});
+
+fileInput.addEventListener('change', e => {
+  const f = e.target.files[0];
+  if (!f) return;
+  stopCamera();
+  const reader = new FileReader();
+  reader.onload = () => {
+    photoPreview.src = reader.result;
+    photoPreview.style.display = 'block';
+    cameraStream.style.display = 'none';
+  };
+  reader.readAsDataURL(f);
+});
+
+function stopCamera(){
+  if (currentStream) {
+    currentStream.getTracks().forEach(t => t.stop());
+    currentStream = null;
+  }
+}
+
+/* -------------------- LOGIN -> Chat -------------------- */
+loginBtn.addEventListener('click', () => {
+  const nama = namaInput.value.trim();
+  if (!nama) { alert('Masukkan nama siswa!'); return; }
+
+  sessionStorage.setItem('namaSiswa', nama);
+  sessionStorage.setItem('fotoSiswa', photoPreview.src || '');
+
+  namaSiswaChat.textContent = nama;
+  fotoSiswaChat.src = photoPreview.src || 'https://i.imgur.com/oq1A8q2.jpeg';
+
+  // show chat, hide others
+  loginSection.style.display = 'none';
+  chatSection.style.display = 'flex';
+  quizSection.style.display = 'none';
+});
+
+/* -------------------- CHAT functions -------------------- */
+function escapeHtml(s){ return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function addUserBubble(text){
+  const div = document.createElement('div'); div.className = 'chat-bubble user';
+  const foto = sessionStorage.getItem('fotoSiswa') || '';
+  div.innerHTML = `<div class="bubble">${escapeHtml(text)}</div><img src="${foto}" style="width:35px;height:35px;border-radius:50%;">`;
+  chatBody.appendChild(div); chatBody.scrollTop = chatBody.scrollHeight;
+}
+function addBotBubble(text){
+  const div = document.createElement('div'); div.className = 'chat-bubble bot';
+  div.innerHTML = `<div class="bubble">${text}</div>`; chatBody.appendChild(div); chatBody.scrollTop = chatBody.scrollHeight;
+}
+
+/* simple faq */
+const faq = {
+  //'sistem komputer':'Sistem komputer terdiri dari hardware, software, dan brainware.',
+  //'hardware':'Hardware: perangkat fisik seperti keyboard, mouse, monitor.',
+  //'software':'Software: program/aplikasi seperti Windows, Chrome, Office.',
+  //'brainware':'Brainware: manusia yang menggunakan/merawat sistem.'
+};
+
+kirimBtn.addEventListener('click', () => {
+  const t = inputChat.value.trim();
+  if (!t) return;
+  addUserBubble(t); inputChat.value = '';
+  setTimeout(()=> {
+    const lower = t.toLowerCase();
+    let found = false;
+    Object.keys(faq).forEach(k => { if (!found && lower.includes(k)) { addBotBubble(faq[k]); found = true; }});
+    if (!found) {
+
+	const pdfAns = cariJawabanDariPDF(lower);
+	if (pdfAns) {
+
+    	if (typeof pdfAns === "object") {
+        	addBotBubble(`
+            	<b>${pdfAns.name}</b><br>
+           	 ${pdfAns.desc}<br>
+            	${
+                	pdfAns.img && pdfAns.img !== "-"
+                	? `<img src="${pdfAns.img}" onclick="zoomImage('${pdfAns.img}')" style="cursor:zoom-in; max-width:150px; margin-top:10px;border-radius:10px;">`
+                	: ""
+            	}
+        	`);
+    	} else {
+        	addBotBubble(pdfAns);
+    	}
+
+	} else {
+	    addBotBubble('Maaf, saya belum menemukan jawaban di TXT 😊');
+	}
+    }
+  }, 300);
+});
+inputChat.addEventListener('keydown', e => { if (e.key === 'Enter') kirimBtn.click(); });
+
+clearBtn.addEventListener('click', ()=> { chatBody.innerHTML = ''; addBotBubble('Halo! Selamat datang di Cbotika 😊'); });
+downloadBtn.addEventListener('click', ()=> {
+    const htmlContent = `
+        <html>
+        <head>
+            <meta charset="UTF-8" />
+            <title>Riwayat Chat CBOTIKA</title>
+            <style>
+                body { font-family: Arial; padding: 20px; }
+                img { max-width: 200px; border-radius: 10px; margin-top: 10px; }
+                .chat-bubble { margin-bottom: 15px; }
+            </style>
+        </head>
+        <body>
+            <h2>Riwayat Chat CBOTIKA</h2>
+            ${chatBody.innerHTML}
+        
+
+
+
+<div id="imgZoomOverlay" style="position:fixed;inset:0;background:rgba(0,0,0,0.8);display:none;justify-content:center;align-items:center;z-index:999999;">
+  <img id="zoomImg" src="" style="max-width:90%;max-height:90%;border-radius:10px;box-shadow:0 0 20px #000;cursor:zoom-out;">
+</div>
+
+</body>
+        </html>
+    `;
+
+    const blob = new Blob([htmlContent], { type: "text/html" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "riwayat_chat_cbotika.html";
+    a.click();
+});
+
+
+/* -------------------- QUIZ system -------------------- */
+const quizBank = [
+  {clue:"perangkat fisik komputer yang dapat dilihat dan disentuh secara langsung",letters:["A","R","H","R","E","D","W","A"],answer:"HARDWARE"},
+  {clue:"perangkat yang berisi kumpulan instruksi, program, atau data yang digunakan untuk mengoperasikan komputer dan menjalankan tugas tertentu",letters:["T","A","W","R","O","F","E","S"],answer:"SOFTWARE"},
+  {clue:"sekumpulan perangkat komputer yang saling berkaitan dan berinteraksi antara satu sama lain untuk menjalankan sebuah Proses Pengolahan Data",letters:["K","O","T","E","R","M","S","P","U","M","T","I","E","S"],answer:"SISTEM KOMPUTER"},
+  {clue:"Perangkat keras yang berukuran kecil dan mudah digenggam yang umumnya memiliki dua tombol dan sebuah bola atau laser di bawahnya untuk menggerakkan kursor ",letters:["O","E","S","M","U"],answer:"MOUSE"},
+  {clue:"hasil akhir setelah data diproses oleh komputer",letters:["P","O","E","T","U","O","D","C","E","I","V","T"],answer:"OUTPUT DEVICE"},
+  {clue:"layar yang berguna untuk menampilkan informasi yang telah di proses pada komputer",letters:["R","O","N","T","O","M","I"],answer:"MONITOR"},
+  {clue:"perangkat penyimpanan tradisional yang berbentuk piringan yang dapat digunakan untuk membaca dan menulis data",letters:["K","A","D","H","I","D","R","S"],answer:"HARDDISK"},
+  {clue:"manusia yang menggunakan, mengoperasikan, atau mengendalikan perangkat keras (hardware) dan perangkat lunak (software). ",letters:["W","A","R","B","N","R","A","E","I"],answer:"BRAINWARE"},
+  {clue:"chip kecil yang berada di komputer yang mengontrol keseluruhan jalannya sebuah sistem perangkat",letters:["C","R","O","S","P","R","O","S","E"],answer:"PROCESSOR"},
+  {clue:"Perangkat yang digunakan untuk mengeluarkan suara",letters:["S","R","P","E","E","K","A"],answer:"SPEAKER"},
+  {clue:"Salah satu contoh media penyimpanan berbasi cloude",letters:["E","R","D","V","I"],answer:"DRIVE"},
+  {clue:"Perangkat lunak kategori Sistem oprasi yang berbayar adalah",letters:["S","W","N","D","I","W","O"],answer:"WINDOWS"},
+  {clue:"Contoh aplikasi yang sering digunakan untuk membuat desain dan tanpa harus di instal",letters:["A","V","C","N","A"],answer:"CANVA"},
+  {clue:"Orang yang memiliki keahlian dibidang koding atau pemogramaan dan menjadi salah satu profesi yang banyak dibutuhkan di dunia digital",letters:["G","R","A","O","R","P","M","R","E","M"],answer:"PROGRAMMER"},
+  {clue:"Perangkat yang digunakan untuk memasukkan data berupa huruf, angka, dan simbol ",letters:["O","E","Y","K","R","A","B","D"],answer:"KEYBOARD"}
+];
+
+let qIndex = 0, qScore = 0, qTimer = null, qLeft = 30, qAnswered = false;
+
+kuisBtn.addEventListener('click', ()=> {
+  // show quiz view
+  loginSection.style.display = 'none';
+  chatSection.style.display = 'none';
+  quizSection.style.display = 'block';
+  quizStartScreen.style.display = 'block';
+  quizMainScreen.style.display = 'none';
+  quizFinalScreen.style.display = 'none';
+});
+
+quizBackBtnTop.addEventListener('click', ()=> {
+  quizSection.style.display = 'none';
+  chatSection.style.display = 'flex';
+});
+
+quizStartBtn.addEventListener('click', ()=> {
+  qIndex = 0; qScore = 0;
+  quizStartScreen.style.display = 'none';
+  quizMainScreen.style.display = 'block';
+  quizFinalScreen.style.display = 'none';
+  loadQuizQuestion();
+});
+
+function loadQuizQuestion(){
+  stopQTimer();
+  qAnswered = false;
+  const q = quizBank[qIndex];
+  quizClue.textContent = q.clue;
+  quizLetters.innerHTML = '';
+  const letters = Array.from(q.letters);
+  shuffle(letters);
+  letters.forEach(l => {
+    const el = document.createElement('div'); el.className = 'quiz-letter'; el.textContent = l; quizLetters.appendChild(el);
+  });
+  quizAnswerInput.value = ''; quizAnswerInput.disabled = false;
+  quizNextBtn.style.display = 'none'; quizFinishBtn.style.display = 'none';
+  quizMsg.textContent = ''; quizScore.textContent = `Skor: ${qScore} / ${quizBank.length}`;
+  startQTimer();
+}
+
+function startQTimer(){
+  qLeft = 30; quizTimer.textContent = '⏳ ' + qLeft;
+  qTimer = setInterval(()=> {
+    qLeft--; quizTimer.textContent = '⏳ ' + qLeft;
+    if (qLeft <= 0){
+      stopQTimer();
+      qAnswered = true;
+      quizAnswerInput.disabled = true;
+      quizMsg.textContent = 'Waktu habis!';
+      if (qIndex >= quizBank.length - 1) quizFinishBtn.style.display = 'inline-block';
+      else quizNextBtn.style.display = 'inline-block';
+    }
+  }, 1000);
+}
+function stopQTimer(){ if (qTimer){ clearInterval(qTimer); qTimer = null; } }
+
+/* -------------------- QUIZ: fixed check + enter key -------------------- */
+
+quizAnswerInput.addEventListener('keydown', function(e){
+  if(e.key === 'Enter') {
+    e.preventDefault();
+    quizCheckBtn.click();
+  }
+});
+
+quizCheckBtn.addEventListener('click', ()=> {
+  if (qAnswered) return;
+  const rawGuess = (quizAnswerInput.value||'').trim().toUpperCase();
+  // normalize: remove spaces for comparison (option A)
+  const guess = rawGuess.replace(/\s+/g,'');
+  const correct = quizBank[qIndex].answer.toUpperCase().replace(/\s+/g,'');
+
+  const boxes = Array.from(quizLetters.children);
+
+  if (guess === correct){
+    qAnswered = true; qScore++;
+    quizMsg.textContent = 'Benar! 🎉'; quizAnswerInput.disabled = true; stopQTimer();
+
+    // replace letter boxes with correct sequence (without spaces)
+    quizLetters.innerHTML = '';
+    correct.split('').forEach(ch => {
+      const el = document.createElement('div');
+      el.className = 'quiz-letter correct-box';
+      el.textContent = ch;
+      quizLetters.appendChild(el);
+    });
+
+    if (qIndex >= quizBank.length - 1) quizFinishBtn.style.display = 'inline-block'; else quizNextBtn.style.display = 'inline-block';
+    quizScore.textContent = `Skor: ${qScore} / ${quizBank.length}`;
+
+  } else {
+    // wrong: animate existing boxes red briefly
+    quizMsg.textContent = 'Salah, coba lagi 😅';
+    boxes.forEach(b => b.classList.add('wrong-box'));
+    setTimeout(()=> boxes.forEach(b => b.classList.remove('wrong-box')), 600);
+  }
+});
+
+/* shuffle */
+quizShuffleBtn.addEventListener('click', ()=> {
+  const arr = Array.from(quizLetters.children).map(n=>n.textContent);
+  shuffle(arr);
+  quizLetters.innerHTML = '';
+  arr.forEach(ch => { const el = document.createElement('div'); el.className='quiz-letter'; el.textContent = ch; quizLetters.appendChild(el); });
+});
+
+quizNextBtn.addEventListener('click', ()=> {
+  qIndex++;
+  if (qIndex >= quizBank.length) showQuizFinal(); else loadQuizQuestion();
+});
+
+quizFinishBtn.addEventListener('click', showQuizFinal);
+
+function showQuizFinal(){
+  stopQTimer();
+  quizMainScreen.style.display = 'none';
+  quizFinalScreen.style.display = 'block';
+  quizFinalTitle.textContent = `Skor Akhir: ${qScore} / ${quizBank.length}`;
+  const msgs = ['Hebat! Terus asah kemampuanmu 🌟','Keren! Tetap semangat 💪','Bagus! Tetap semangat 📚'];
+  quizFinalMotiv.textContent = msgs[Math.floor(Math.random()*msgs.length)];
+
+  // final buttons: logout + exit
+  quizLogoutBtn.onclick = ()=> { sessionStorage.clear(); location.reload(); };
+  quizExitBtn.onclick = ()=> { try{ window.close(); } catch(e){}; setTimeout(()=>alert('Jika tab tidak tertutup otomatis, silakan tutup secara manual.'),150); };
+}
+
+/* -------------------- Utils -------------------- */
+function shuffle(a){ for (let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } }
+
+/* -------------------- Persist session on load -------------------- */
+window.addEventListener('load', ()=> {
+  const nama = sessionStorage.getItem('namaSiswa');
+  const foto = sessionStorage.getItem('fotoSiswa');
+  if (nama){
+    // show chat
+    loginSection.style.display = 'none';
+    chatSection.style.display = 'flex';
+    quizSection.style.display = 'none';
+    namaSiswaChat.textContent = nama;
+    fotoSiswaChat.src = foto || 'https://i.imgur.com/oq1A8q2.jpeg';
+  } else {
+    // show login
+    loginSection.style.display = 'flex';
+    chatSection.style.display = 'none';
+    quizSection.style.display = 'none';
+  }
+});
+
+/* -------------------- LOGOUT POPUP (attach after DOM ready) -------------------- */
+window.addEventListener('load', () => {
+  const logoutBtnEl = document.getElementById('logoutBtn');
+  const popup = document.getElementById('popupLogout');
+  const yes = document.getElementById('logoutYes');
+  const no = document.getElementById('logoutNo');
+  // safety check
+  if (!logoutBtnEl || !popup || !yes || !no) return;
+
+  logoutBtnEl.addEventListener('click', () => {
+    popup.style.display = 'flex';
+  });
+
+  yes.addEventListener('click', () => {
+    sessionStorage.clear();
+    localStorage.clear();
+    location.reload();
+  });
+
+  no.addEventListener('click', () => {
+    popup.style.display = 'none';
+  });
+});
+
+
+/* =================== ADVANCED PDF FEATURES INSERTED BY ASSISTANT =================== */
+
+let pdfParagraphs = [];
+
+// load pdf.js (will be appended only once)
+(function loadPdfJs(){
+    if (window.pdfjsLib) return;
+    const pdfjsScript = document.createElement("script");
+    pdfjsScript.src = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.9.179/pdf.min.js";
+    pdfjsScript.crossOrigin = "anonymous";
+    document.head.appendChild(pdfjsScript);
+})();
+
+/* -------------------- UPLOAD PDF -------------------- */
+document.getElementById("pdfInput")?.addEventListener("change", function(){
+    const file = this.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => loadPDF_Paragraph(new Uint8Array(reader.result));
+    reader.readAsArrayBuffer(file);
+});
+
+/* -------------------- LOAD TXT FROM URL -------------------- */
+/* >>> GANTI URL TXT KAMU DI SINI <<< */
+const TXT_URL = "https://raw.githubusercontent.com/smanjogorotoweb/smanjogorotoweb.github.io/main/materi.txt";
+
+if (TXT_URL) {
+    fetch(TXT_URL)
+        .then(response => response.text())
+        .then(text => loadTXT_Paragraph(text))
+        .catch(err => console.error("Gagal load TXT:", err));
+}
+
+
+/* -------------------- FUNCTION PARSER TXT -------------------- */
+/* Ubah sesuai kebutuhan kamu */
+function loadTXT_Paragraph(textContent) {
+    const lines = String(textContent)
+        .split(/\n+/)
+        .map(l => l.trim())
+        .filter(l => l.length > 0);
+
+    txtItems = [];
+    txtParagraphs = [];
+
+    lines.forEach(line => {
+        const parts = line.split("|");
+
+        const name = parts[0] || "";
+        const desc = parts[1] || "";
+        const img = parts[2] || "";
+
+        txtItems.push({ name, desc, img });
+        txtParagraphs.push(desc.toLowerCase());
+    });
+
+    console.log("TXT LOADED VIA URL:", txtItems);
+    alert("TXT URL berhasil dibaca! Total data: " + txtItems.length);
+}
+
+
+
+/* -------------------- Extract PDF per PARAGRAPH -------------------- */
+
+/* -------------------- PARSER TABEL PDF (Keyword | Materi | Gambar) -------------------- */
+/* Fungsi ini mengambil byte array PDF (buf) dan mengisi pdfTopics[]:
+   pdfTopics = [{ keyword: "kartu grafis", materi: "Kartu grafis adalah ...", image: "data:image/..." }, ...]
+*/
+
+let pdfTopics = []; // array objek hasil parse
+
+async function loadPDF_Paragraph(buf){
+    try {
+        // tunggu pdf.js tersedia
+        const waitForPdf = () => new Promise((res, rej) => {
+            if (window.pdfjsLib) return res();
+            const t0 = Date.now();
+            const iv = setInterval(() => {
+                if (window.pdfjsLib) { clearInterval(iv); return res(); }
+                if (Date.now() - t0 > 10000) { clearInterval(iv); return rej("pdf.js timeout"); }
+            }, 100);
+        });
+        await waitForPdf();
+
+        const pdf = await pdfjsLib.getDocument(buf).promise;
+        let fullText = "";
+
+        for (let i = 1; i <= pdf.numPages; i++){
+            const page = await pdf.getPage(i);
+            const content = await page.getTextContent();
+            // gabungkan semua text item menjadi satu string, pertahankan newlines
+            const lines = content.items.map(item => item.str || "");
+            // beberapa PDF memecah sel tabel ke beberapa item; sisipkan newline untuk mempermudah parsing
+            fullText += lines.join(" ") + "\n";
+        }
+
+        // normalisasi awal: ubah beberapa whitespace berlebih jadi newline terpisah
+        // kemudian pecah ke baris (trim tiap baris)
+        const rawLines = fullText
+            .replace(/\r/g,'')
+            .split(/\n/)
+            .map(l => l.trim())
+            .filter(l => l.length > 0);
+
+        // cari header (baris yang mengandung kata 'keyword' & 'mater' & 'gambar')
+        let headerIdx = -1;
+        for (let i = 0; i < rawLines.length; i++){
+            const low = rawLines[i].toLowerCase();
+            if (low.includes("keyword") && (low.includes("mater") || low.includes("materi")) && low.includes("gambar")) {
+                headerIdx = i;
+                break;
+            }
+        }
+
+        // jika header tidak ditemukan, gunakan dari awal
+        let startIdx = headerIdx >= 0 ? headerIdx + 1 : 0;
+
+        // helper: apakah sebuah baris tampak seperti image filename (endswith jpg/png) atau kata 'gambar'?
+        const looksLikeImage = (s) => {
+            if (!s) return false;
+            const low = s.toLowerCase();
+            if (low.includes("gambar") || low.match(/\.(jpg|jpeg|png|gif|bmp)$/i)) return true;
+            return false;
+        };
+
+        // Aggregate lines into rows (keyword, materi, image)
+        const topics = [];
+        let i = startIdx;
+        while (i < rawLines.length) {
+            // --- 1) Ambil keyword: bisa terdiri dari beberapa baris pendek (gabungkan sampai deteksi materi) ---
+            // keyword biasanya pendek (<=5 kata). Jadi kumpulkan satu atau beberapa baris pendek sebagai keyword.
+            let keywordParts = [];
+            // safety: gather up to 3 baris untuk keyword, as long as total words <=5
+            let lookahead = 0;
+            while (i + lookahead < rawLines.length && lookahead < 4) {
+                const candidate = rawLines[i + lookahead];
+                const wordCount = candidate.split(/\s+/).filter(Boolean).length;
+                // if candidate looks like the start of a materi (longer than 6 words) and we already have some keywordParts, break
+                if (wordCount > 6 && keywordParts.length > 0) break;
+                // if candidate looks like an image marker AND we don't have materi yet, treat as possibly leftover; break
+                if (looksLikeImage(candidate) && keywordParts.length === 0) {
+                    // this might be stray; skip it
+                    lookahead++;
+                    break;
+                }
+                // otherwise, add candidate to keywordParts if adding keeps total words <=5
+                const totalWords = (keywordParts.join(" ") + " " + candidate).trim().split(/\s+/).filter(Boolean).length;
+                if (totalWords <= 5) {
+                    keywordParts.push(candidate);
+                    lookahead++;
+                } else {
+                    break;
+                }
+            }
+
+            // if no keywordParts collected, use current line as keyword (fallback)
+            if (keywordParts.length === 0) {
+                keywordParts.push(rawLines[i]);
+                i++;
+            } else {
+                // consume the lines used for keyword
+                i += keywordParts.length;
+            }
+
+            const rawKeyword = keywordParts.join(" ").trim();
+
+            // --- 2) Ambil materi: kumpulkan baris sampai kita menemukan tanda gambar atau baris pendek yang mungkin keyword (heuristik) ---
+            let materiParts = [];
+            while (i < rawLines.length) {
+                const line = rawLines[i];
+                // Stop if next line looks like the start of a next keyword:
+                // Heuristic: line has <=5 words AND next non-empty line has >6 words (likely materi)
+                const wc = line.split(/\s+/).filter(Boolean).length;
+                // if line itself looks like a header of next row (short) and we already have some materi, break
+                if (wc <= 5 && materiParts.length > 0) {
+                    // check ahead: if next line exists and is short too, maybe keyword split across lines -> treat as break
+                    const nextLine = rawLines[i+1] || "";
+                    const nextWc = nextLine.split(/\s+/).filter(Boolean).length;
+                    if (nextWc <= 5) break;
+                }
+                // If line explicitly contains "gambar" and we have materi, stop and let image handler take it
+                if (/gambar/i.test(line) && materiParts.length > 0) break;
+
+                // Otherwise append to materi
+                materiParts.push(line);
+                i++;
+            }
+
+            // --- 3) Ambil gambar jika ada (baris selanjutnya yang terdeteksi image) ---
+            let image = null;
+            if (i < rawLines.length && looksLikeImage(rawLines[i])) {
+                // next line is an image marker; capture it
+                image = rawLines[i];
+                i++;
+            } else if (i < rawLines.length && /gambar/i.test(rawLines[i])) {
+                // line says "gambar", next line might contain filename or description
+                i++;
+                if (i < rawLines.length && !(/keyword|mater/i.test(rawLines[i].toLowerCase()))) {
+                    image = rawLines[i];
+                    i++;
+                }
+            }
+
+            // build topic object
+            const topic = {
+                keyword: rawKeyword.toLowerCase(),
+                materi: materiParts.join(" ").trim(),
+                image: image || null
+            };
+
+            // only push if keyword or materi exists
+            if (topic.keyword || topic.materi) topics.push(topic);
+
+            // small safety: avoid infinite loop
+            if (keywordParts.length === 0 && materiParts.length === 0) i++;
+        }
+
+        // final normalize keywords: remove stop words at start/end and collapse spaces
+        const stopWords = ["apa","apa itu","apa fungsi","jelaskan","adalah","yang","sebuah","seorang","cara","bagaimana","untuk","fungsi","jenis","sifat"];
+        const normalizeKey = (s) => {
+            if (!s) return "";
+            let kw = s.replace(/[^\w\s]/g,' ').trim().toLowerCase().replace(/\s+/g,' ');
+            let changed = true;
+            while (changed) {
+                changed = false;
+                for (let w of stopWords) {
+                    if (kw.startsWith(w + " ")) { kw = kw.slice((w + " ").length); changed = true; }
+                    if (kw.endsWith(" " + w)) { kw = kw.slice(0, -(( " " + w).length)); changed = true; }
+                }
+            }
+            const parts = kw.split(" ").filter(Boolean);
+            return parts.slice(0,5).join(" ");
+        };
+
+        pdfTopics = topics.map(t => {
+            return {
+                keyword: normalizeKey(t.keyword),
+                materi: (t.materi || "").trim(),
+                image: t.image // bisa berupa nama file/label; pdf.js tidak selalu memberi data:image, ini akan jadi filename atau 'tempel gambar'
+            };
+        });
+
+        console.log("PDF table parsed into topics:", pdfTopics);
+        alert("PDF berhasil diparse menjadi tabel (" + pdfTopics.length + " topik)!");
+    } catch (e) {
+        console.error("Error baca PDF (table parser):", e);
+        alert("Terjadi kesalahan saat mem-parse PDF. Periksa konsol untuk detail.");
+    }
+}
+
+/* -------------------- Cari jawaban berdasarkan table topics -------------------- */
+/* =============== PENCARIAN PDF AKURAT – ADVANCED VERSION =============== */
+
+
+function cariJawabanDariPDF(query) {
+    // Advanced search: normalization + token rules + fuzzy matching + scoring
+    if (!txtItems || !txtItems.length) return null;
+    query = String(query || "").toLowerCase().replace(/[^\w\s]/g, " ").trim();
+    if (query.length < 3) return null;
+
+    // helper: levenshtein distance
+    function levenshtein(a, b) {
+        if (!a) return b.length;
+        if (!b) return a.length;
+        a = String(a); b = String(b);
+        const m = a.length, n = b.length;
+        let dp = new Array(n+1);
+        for (let j=0;j<=n;j++) dp[j]=j;
+        for (let i=1;i<=m;i++){
+            let prev = dp[0];
+            dp[0] = i;
+            for (let j=1;j<=n;j++){
+                let cur = dp[j];
+                let cost = a.charAt(i-1) === b.charAt(j-1) ? 0 : 1;
+                dp[j] = Math.min(dp[j] + 1, dp[j-1] + 1, prev + cost);
+                prev = cur;
+            }
+        }
+        return dp[n];
+    }
+
+    // normalize words and keep only words length>=3
+    const words = query.split(/\s+/).filter(w => w.length >= 3);
+    if (words.length === 0) return null;
+
+    let best = null;
+    let bestScore = 0;
+
+    txtItems.forEach(item => {
+        const name = String(item.name || "").toLowerCase();
+        const desc = String(item.desc || "").toLowerCase();
+
+        let score = 0;
+
+        // strong boost if query contains exact item name
+        if (name && query.includes(name)) score += 120;
+
+        // per-word exact matches in desc
+        words.forEach(w => {
+            if (desc.includes(w)) score += 25;
+            else if (name.includes(w)) score += 30;
+            else {
+                // fuzzy check against name and desc slices (allow small typos)
+                const levName = name ? levenshtein(w, name) : Infinity;
+                const levDesc = levenshtein(w, desc.slice(0, 200));
+                const ratioName = name ? (1 - levName / Math.max(1, Math.max(w.length, name.length))) : 0;
+                const ratioDesc = 1 - levDesc / Math.max(1, Math.max(w.length, Math.min(200, desc.length)));
+                if (ratioName > 0.6) score += Math.round(ratioName * 20);
+                if (ratioDesc > 0.6) score += Math.round(ratioDesc * 12);
+            }
+        });
+
+        // overall similarity between query and name/desc (short descriptions)
+        const levFullName = name ? levenshtein(query, name) : Infinity;
+        const levFullDesc = levenshtein(query, desc.slice(0, 300));
+        const simName = name ? (1 - levFullName / Math.max(query.length, name.length)) : 0;
+        const simDesc = 1 - levFullDesc / Math.max(1, Math.max(query.length, Math.min(300, desc.length)));
+        if (simName > 0.6) score += Math.round(simName * 80);
+        if (simDesc > 0.45) score += Math.round(simDesc * 40);
+
+        // small penalty for extremely short descriptions to avoid noisy matches
+        if ((desc.split(/\s+/).length) < 3) score -= 10;
+
+        if (score > bestScore) {
+            bestScore = score;
+            best = item;
+        }
+    });
+
+    // require a reasonable threshold for returning a result
+    if (bestScore < 40) return null;
+
+    return {
+        name: best.name,
+        desc: best.desc,
+        img: best.img
+    };
+}
+
+
+
+
+/* ================= SUPER ACCURATE SEARCH ================= */
+
+/* ================= SEARCH FIX KHUSUS FORMAT A|B|C ================= */
+
+/* Data hasil parsing TXT */
+let txtItems = [];     // {name, desc, img}
+let txtParagraphs = []; // hanya deskripsi
+
+/* TXT READER: membaca baris dengan format A|B|C */
+document.getElementById("txtInput")?.addEventListener("change", function () {
+    const file = this.files[0];
+    if (!file) return;
+
+    const r = new FileReader();
+    r.onload = () => {
+        const lines = String(r.result)
+            .split(/\n+/)
+            .map(l => l.trim())
+            .filter(l => l.length > 0);
+
+        txtItems = [];
+        txtParagraphs = [];
+
+        lines.forEach(line => {
+            const parts = line.split("|");
+
+            const name = parts[0] || "";
+            const desc = parts[1] || "";
+            const img = parts[2] || "";
+
+            txtItems.push({ name, desc, img });
+            txtParagraphs.push(desc.toLowerCase());
+        });
+
+        alert("TXT berhasil diproses! Total data: " + txtItems.length);
+    };
+
+    r.readAsText(file);
+});
+
+/* ===================== PENCARIAN SUPER AKURAT ===================== */
+
+/* Algoritma pencarian berbasis kolom deskripsi */
+
+
+
+
+
+
+
+
+// === IMAGE ZOOMER ===
+document.addEventListener("DOMContentLoaded", function(){
+    const zoomOverlay = document.getElementById("imgZoomOverlay");
+    const zoomImg = document.getElementById("zoomImg");
+
+    window.zoomImage = function(src) {
+        zoomImg.src = src;
+        zoomOverlay.style.display = "flex";
+    }
+
+    zoomOverlay.addEventListener("click", function () {
+        zoomOverlay.style.display = "none";
+        zoomImg.src = "";
+    });
+});
+
+</script>
+
+
+
+
+
+
+
+
+<div id="imgZoomOverlay" style="position:fixed;inset:0;background:rgba(0,0,0,0.8);display:none;justify-content:center;align-items:center;z-index:999999;">
+  <img id="zoomImg" src="" style="max-width:90%;max-height:90%;border-radius:10px;box-shadow:0 0 20px #000;cursor:zoom-out;">
+</div>
+
+</body>
+</html>
